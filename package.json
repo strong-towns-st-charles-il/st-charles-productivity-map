@@ -1,0 +1,25 @@
+{
+  "name": "st-charles-productivity-map",
+  "version": "1.0.0",
+  "description": "",
+  "main": "sketch.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/strong-towns-st-charles-il/st-charles-productivity-map.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/strong-towns-st-charles-il/st-charles-productivity-map/issues"
+  },
+  "homepage": "https://github.com/strong-towns-st-charles-il/st-charles-productivity-map#readme",
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "node-fetch": "^3.2.10",
+    "puppeteer": "^19.2.1"
+  }
+}
