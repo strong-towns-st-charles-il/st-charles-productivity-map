@@ -11,35 +11,60 @@ import (
 	"strings"
 
 	"github.com/gocolly/colly"
+	"github.com/joho/godotenv"
 )
 
+// all of the fields on https://kaneil.devnetwedge.com
 type Parcel struct {
-	ParcelNumber     string `json:"parcelNumber"`
-	SiteAddress      string `json:"siteAddress"`
-	Owner            string `json:"owner"`
-	TaxYear          string `json:"taxYear"`
-	SaleStatus       string `json:"saleStatus"`
-	PropertyClass    string `json:"propertyClass"`
-	TaxCode          string `json:"taxCode"`
-	TaxStatus        string `json:"taxStatus"`
-	NetTaxableValue  string `json:"netTaxableValue"`
-	TaxRate          string `json:"taxRate"`
-	TotalTax         string `json:"totalTax"`
-	Township         string `json:"township"`
-	Acres            string `json:"acres"`
-	MailingAddress   string `json:"mailingAddress"`
-	LegalDescription string `json:"legalDescription"`
+	ParcelNumber     string `json:"ParcelNumber"`
+	SiteAddress      string `json:"SiteAddress"`
+	Owner            string `json:"Owner"`
+	TaxYear          string `json:"TaxYear"`
+	SaleStatus       string `json:"SaleStatus"`
+	PropertyClass    string `json:"PropertyClass"`
+	TaxCode          string `json:"TaxCode"`
+	TaxStatus        string `json:"TaxStatus"`
+	NetTaxableValue  string `json:"NetTaxableValue"`
+	TaxRate          string `json:"TaxRate"`
+	TotalTax         string `json:"TotalTax"`
+	Township         string `json:"Township"`
+	Acres            string `json:"Acres"`
+	MailingAddress   string `json:"MailingAddress"`
+	LegalDescription string `json:"LegalDescription"`
 }
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
+// json format for 3D mapping
+// Note: check type for Latitude, Longtitude, and Tax
+type Data struct {
+	PID       string  `json:"PID"`
+	Latitude  float64 `json:"Latitude"`
+	Longitude float64 `json:"Longitude"`
+	LotSize   string  `json:"Loy_Size"`
+	LotDesc   string  `json:"Lot_Desc"`
+	Type      string  `json:"Type"`
+	Tax       float64 `json:"Tax"`
 }
 
 func main() {
-	dat, err := os.ReadFile("./data/sample-parcel.csv")
-	check(err)
+	// for loading the api key for geocoding - convert from address to lat/long
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Error loading .env file")
+	}
+
+	apiKey := os.Getenv("GEOCODING_API_KEY")
+	if apiKey == "" {
+		log.Fatal("Env: apiKey must be set")
+	}
+
+	filename := "sample-parcel.csv"
+	path := "./data/"
+
+	dat, err := os.ReadFile(path + filename)
+	if err != nil {
+		log.Fatalf("%s not found in %s: %v", filename, path, err)
+	}
+
 	years, parcelData := formatCSV(string(dat))
 	var parcels []Parcel
 	for i := range parcelData {
@@ -48,8 +73,23 @@ func main() {
 		parcels = append(parcels, p)
 	}
 
+	// Write parsed data to file parcel.json
 	writeJSON(parcels)
 
+	// should be a new file here for main. Maybe split the scraper/parser and 3D Mapping Data?
+
+	// Read the `parcel.json` file
+	content, err := ioutil.ReadFile("./parcel.json")
+	if err != nil {
+		log.Fatal("Error when opening file: ", err)
+	}
+
+	// Error here: cannot unmarshal array
+	var payload Parcel
+	err = json.Unmarshal(content, &payload)
+	if err != nil {
+		log.Fatal("Error during Unmarshal(): ", err)
+	}
 }
 
 func formatCSV(table string) (years []string, parcels []string) {
